@@ -287,7 +287,7 @@ public static class VExtensions
     }
 }
 
-public class ValueWithCaption(decimal value, string caption, int precedence = 0, List<string>? calculationSteps = null, bool isNamed = false)
+public class ValueWithCaption(decimal value, string caption, int precedence = 0, List<string>? calculationSteps = null, bool isNamed = false) : IComparable, IComparable<ValueWithCaption>
 {
     public decimal Value { get; } = value;
     public int Precedence { get; } = precedence;
@@ -300,22 +300,22 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         {
             if (IsNamed)
             {
-                return caption; // Named values just show their name
+                return _caption; // Named values just show their name
             }
             else if (Precedence == 0)
             {
-                return caption; // Base values show just their caption
+                return _caption; // Base values show just their caption
             }
             else
             {
                 // Computed expressions show calculation = result
                 var result = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
-                return $"{caption} = {result}";
+                return $"{_caption} = {result}";
             }
         }
     }
     
-    internal string _caption = caption;
+    internal readonly string _caption = caption;
     
     public string FinalCalculationSteps
     {
@@ -1017,6 +1017,27 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
     public override int GetHashCode()
     {
         return HashCode.Combine(Value, Caption);
+    }
+
+    // IComparable implementation
+    public int CompareTo(object? obj)
+    {
+        if (obj == null) return 1; // null is considered less than any value
+        
+        if (obj is ValueWithCaption other)
+        {
+            return CompareTo(other);
+        }
+        
+        throw new ArgumentException($"Object must be of type {nameof(ValueWithCaption)}", nameof(obj));
+    }
+
+    // IComparable<ValueWithCaption> implementation
+    public int CompareTo(ValueWithCaption? other)
+    {
+        if (other is null) return 1; // null is considered less than any value
+        
+        return Value.CompareTo(other.Value);
     }
 
     // Static factory methods for expression-based creation
