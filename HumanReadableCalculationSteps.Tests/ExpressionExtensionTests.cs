@@ -152,7 +152,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(18m, tax.Value);
-            Assert.Equal("100[100] × 0.18[0.18]", tax.Caption);
+            Assert.Equal("100[100] × 0.18[0.18] = 18", tax.Caption);
         }
         
         [Fact]
@@ -170,7 +170,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(18m, tax.Value);
-            Assert.Equal("price[100] × rate[0.18]", tax.Caption);
+            Assert.Equal("price[100] × rate[0.18] = 18", tax.Caption);
         }
         
         [Fact]
@@ -190,7 +190,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(160m, result.Value);
-            Assert.Equal("(base1[50] + base2[30]) × multiplier[2]", result.Caption);
+            Assert.Equal("(base1[50] + base2[30]) × multiplier[2] = 160", result.Caption);
         }
         
         [Fact]
@@ -213,7 +213,7 @@ namespace HumanReadableCalculationSteps.Tests
             Assert.Equal("DiscountedPrice", discountedPrice.Caption);
             
             Assert.Equal(100.3m, finalPrice.Value);
-            Assert.Equal("DiscountedPrice + DiscountedPrice × 0.18[0.18]", finalPrice.Caption);
+            Assert.Equal("DiscountedPrice[85] + DiscountedPrice[85] × 0.18[0.18] = 100.3", finalPrice.Caption);
         }
         
         [Fact]

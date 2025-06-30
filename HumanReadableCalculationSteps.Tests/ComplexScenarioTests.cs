@@ -16,7 +16,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = x + x * x;
 
             Assert.Equal(30m, result.Value); // 5 + (5 × 5) = 5 + 25 = 30
-            Assert.Equal("x[5] + x[5] × x[5]", result.Caption);
+            Assert.Equal("x[5] + x[5] × x[5] = 30", result.Caption);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a + a) * (a - a);
 
             Assert.Equal(0m, result.Value); // (7 + 7) × (7 - 7) = 14 × 0 = 0
-            Assert.Equal("(a[7] + a[7]) × (a[7] - a[7])", result.Caption);
+            Assert.Equal("(a[7] + a[7]) × (a[7] - a[7]) = 0", result.Caption);
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = b * b * b;
 
             Assert.Equal(27m, result.Value); // 3 × 3 × 3 = 27
-            Assert.Equal("b[3] × b[3] × b[3]", result.Caption);
+            Assert.Equal("b[3] × b[3] × b[3] = 27", result.Caption);
         }
 
         [Fact]
@@ -602,7 +602,7 @@ FinalPrice = AfterRushFee[14,748.75] + Tax[1,290.52] = 16,039.27
             var total = price + tax;
             
             Assert.Equal(118m, total.Value);
-            Assert.Equal("price[100] + tax[18]", total.Caption);
+            Assert.Equal("price[100] + tax[18] = 118", total.Caption);
             
             // total.FinalCalculationSteps should not be available/compilable
             // This test demonstrates the new API design where only .As() wrapped variables 
@@ -619,7 +619,7 @@ FinalPrice = AfterRushFee[14,748.75] + Tax[1,290.52] = 16,039.27
             // Non-wrapped intermediate calculation
             var intermediate = baseAmount * rate;
             Assert.Equal(10m, intermediate.Value);
-            Assert.Equal("BaseAmount[100] × Rate[0.1]", intermediate.Caption);
+            Assert.Equal("BaseAmount[100] × Rate[0.1] = 10", intermediate.Caption);
             // intermediate.FinalCalculationSteps would not be available
             
             // Wrapped final calculation
