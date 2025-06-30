@@ -17,15 +17,15 @@
     <RepositoryType>git</RepositoryType>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>assets\icon.png</PackageIcon>
+    <PackageIcon>.\assets\icon.png</PackageIcon>
     
     <!-- Versioning -->
-    <Version>1.3.1</Version>
-    <AssemblyVersion>1.3.1</AssemblyVersion>
-    <FileVersion>1.3.1</FileVersion>
+    <Version>1.3.2</Version>
+    <AssemblyVersion>1.3.2</AssemblyVersion>
+    <FileVersion>1.3.2</FileVersion>
     
     <!-- Enable package generation -->
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>

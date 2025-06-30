@@ -1,4 +1,3 @@
-using System.Linq;
 using Xunit;
 
 namespace HumanReadableCalculationSteps.Tests
@@ -67,7 +66,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Assert
             Assert.Equal(145m, totalAdvance.Value); // (50 * 1.1) + (75 * 1.2) = 55 + 90 = 145
             Assert.Equal("Advance1[55] + Advance2[90] = 145", totalAdvance.FinalCalculationSteps);
-            
+
             // Should preserve calculation steps from both advance calculations
             Assert.Contains("Advance1 = Base1[50] × Rate1[1.1] = 55", totalAdvance.CalculationSteps);
             Assert.Contains("Advance2 = Base2[75] × Rate2[1.2] = 90", totalAdvance.CalculationSteps);
@@ -110,7 +109,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange
             var simpleValue = 50m.As("Simple");
             var complexValue = (100m.As("Base") * 1.5m.As("Multiplier")).As("Complex");
-            
+
             var values = new[] { simpleValue, complexValue };
 
             // Act
@@ -119,7 +118,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Assert
             Assert.Equal(200m, total.Value); // 50 + (100 * 1.5) = 50 + 150 = 200
             Assert.Equal("Simple[50] + Complex[150] = 200", total.FinalCalculationSteps);
-            
+
             // Should preserve calculation steps from complex value
             Assert.Contains("Complex = Base[100] × Multiplier[1.5] = 150", total.CalculationSteps);
         }
@@ -149,19 +148,19 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange - More complex real-world scenario with calculated advances
             var employees = new[]
             {
-                new 
-                { 
-                    V1 = new 
-                    { 
+                new
+                {
+                    V1 = new
+                    {
                         AdvanceInSalary = (2000m.As("BaseSalary1") * 0.25m.As("AdvanceRate")).As("Employee1Advance")
-                    } 
+                    }
                 },
-                new 
-                { 
-                    V1 = new 
-                    { 
+                new
+                {
+                    V1 = new
+                    {
                         AdvanceInSalary = (3000m.As("BaseSalary2") * 0.3m.As("AdvanceRate")).As("Employee2Advance")
-                    } 
+                    }
                 }
             };
 
@@ -171,7 +170,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Assert
             Assert.Equal(1400m, totalAdvance.Value); // (2000 * 0.25) + (3000 * 0.3) = 500 + 900 = 1400
             Assert.Equal("Employee1Advance[500] + Employee2Advance[900] = 1,400", totalAdvance.FinalCalculationSteps);
-            
+
             // Should show calculation steps for both advances
             Assert.Contains("Employee1Advance = BaseSalary1[2,000] × AdvanceRate[0.25] = 500", totalAdvance.CalculationSteps);
             Assert.Contains("Employee2Advance = BaseSalary2[3,000] × AdvanceRate[0.3] = 900", totalAdvance.CalculationSteps);
@@ -183,18 +182,18 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange
             var advance1 = (2000m.As("Salary1") * 0.25m.As("Rate")).As("Advance1");
             var advance2 = (3000m.As("Salary2") * 0.3m.As("Rate")).As("Advance2");
-            
+
             var values = new[] { advance1, advance2 };
             var totalAdvance = values.Sum().As("TotalAdvances");
 
             // Act & Assert - Check FinalCalculationSteps
             var expectedSteps = """
-                Advance1 = Salary1[2,000] × Rate[0.25] = 500
+                                Advance1 = Salary1[2,000] × Rate[0.25] = 500
 
-                Advance2 = Salary2[3,000] × Rate[0.3] = 900
+                                Advance2 = Salary2[3,000] × Rate[0.3] = 900
 
-                TotalAdvances = Advance1[500] + Advance2[900] = 1,400
-                """;
+                                TotalAdvances = Advance1[500] + Advance2[900] = 1,400
+                                """;
 
             Assert.Equal(expectedSteps, totalAdvance.FinalCalculationSteps);
         }
@@ -259,7 +258,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Assert
             Assert.Equal(300m, total.Value); // (10*2) + (20*2) + (30*2) + (40*2) + (50*2) = 20+40+60+80+100 = 300
             Assert.Equal("Sum(Calc, count(5))[300] = 300", total.FinalCalculationSteps);
-            
+
             // Should preserve calculation steps from all calculated values
             Assert.Contains("Calc1 = Base1[10] × Rate[2] = 20", total.CalculationSteps);
             Assert.Contains("Calc2 = Base2[20] × Rate[2] = 40", total.CalculationSteps);
@@ -274,7 +273,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange
             var values1 = new[] { 10m.As("A"), 20m.As("B") };
             var values2 = new[] { 5m.As("C"), 15m.As("D") };
-            
+
             var sum1 = values1.Sum();
             var sum2 = values2.Sum();
 
@@ -292,7 +291,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange
             var revenues = new[] { 1000m.As("Revenue1"), 1500m.As("Revenue2") };
             var expenses = new[] { 300m.As("Expense1"), 200m.As("Expense2") };
-            
+
             var totalRevenue = revenues.Sum();
             var totalExpenses = expenses.Sum();
 
@@ -310,7 +309,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange
             var basePrices = new[] { 100m.As("Base1"), 150m.As("Base2"), 200m.As("Base3") };
             var multiplier = 1.2m.As("TaxMultiplier");
-            
+
             var totalBase = basePrices.Sum();
 
             // Act
@@ -327,7 +326,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange
             var totalHours = new[] { 8m.As("Monday"), 7.5m.As("Tuesday"), 8m.As("Wednesday") };
             var days = 3m.As("DaysWorked");
-            
+
             var totalTimeWorked = totalHours.Sum();
 
             // Act
@@ -345,9 +344,9 @@ namespace HumanReadableCalculationSteps.Tests
             var q1Sales = new[] { 1000m.As("Jan"), 1200m.As("Feb"), 900m.As("Mar") };
             var q2Sales = new[] { 1100m.As("Apr"), 1300m.As("May"), 1000m.As("Jun") };
             var q3Sales = new[] { 950m.As("Jul"), 1150m.As("Aug"), 1250m.As("Sep") };
-            
+
             var q1Total = q1Sales.Sum();
-            var q2Total = q2Sales.Sum(); 
+            var q2Total = q2Sales.Sum();
             var q3Total = q3Sales.Sum();
 
             // Act
@@ -355,7 +354,19 @@ namespace HumanReadableCalculationSteps.Tests
 
             // Assert
             Assert.Equal(9850m, halfYearTotal.Value); // 3100 + 3400 + 3350 = 9850
-            Assert.Equal("Jan[1,000] + Feb[1,200] + Mar[900] + Apr[1,100] + May[1,300] + Jun[1,000] + Jul[950] + Aug[1,150] + Sep[1,250] = 9,850", halfYearTotal.FinalCalculationSteps);
+            Assert.Equal(
+                """
+                  Jan[1,000]
+                + Feb[1,200]
+                + Mar[900]
+                + Apr[1,100]
+                + May[1,300]
+                + Jun[1,000]
+                + Jul[950]
+                + Aug[1,150]
+                + Sep[1,250]
+                = 9,850
+                """, halfYearTotal.FinalCalculationSteps);
         }
 
         [Fact]
@@ -365,19 +376,19 @@ namespace HumanReadableCalculationSteps.Tests
             var items = new[] { 10m.As("Item1"), 20m.As("Item2") };
             var multiplier = 2m.As("Multiplier");
             var bonus = 5m.As("Bonus");
-            
+
             var itemSum = items.Sum();
 
             // Act - Test precedence: sum * multiplier + bonus should be (sum * multiplier) + bonus
             var result1 = itemSum * multiplier + bonus;
-            
+
             // Act - Test parentheses override: (sum + bonus) * multiplier
             var result2 = (itemSum + bonus) * multiplier;
 
             // Assert
             Assert.Equal(65m, result1.Value); // (10+20) * 2 + 5 = 30 * 2 + 5 = 60 + 5 = 65
             Assert.Equal("(Item1[10] + Item2[20]) × Multiplier[2] + Bonus[5] = 65", result1.FinalCalculationSteps);
-            
+
             Assert.Equal(70m, result2.Value); // ((10+20) + 5) * 2 = (30 + 5) * 2 = 35 * 2 = 70
             Assert.Equal("(Item1[10] + Item2[20] + Bonus[5]) × Multiplier[2] = 70", result2.FinalCalculationSteps);
         }
@@ -394,10 +405,10 @@ namespace HumanReadableCalculationSteps.Tests
                 new { Amount = 120m.As("Sale4") },
                 new { Amount = 180m.As("Sale5") }
             };
-            
+
             var commission = 0.1m.As("CommissionRate");
             var bonus = 50m.As("Bonus");
-            
+
             var totalSales = sales.Sum(s => s.Amount);
 
             // Act
@@ -414,7 +425,7 @@ namespace HumanReadableCalculationSteps.Tests
             // Arrange
             var prices = new[] { 100m.As("Price1"), 200m.As("Price2") };
             var tax = 0.18m.As("TaxRate");
-            
+
             var subtotal = prices.Sum().As("Subtotal");
             var taxAmount = (subtotal * tax).As("TaxAmount");
 
@@ -423,16 +434,16 @@ namespace HumanReadableCalculationSteps.Tests
 
             // Assert
             Assert.Equal(354m, total.Value); // 300 + (300 * 0.18) = 300 + 54 = 354
-            
+
             // Check calculation steps are properly combined
             var expectedSteps = """
-                Subtotal = Price1[100] + Price2[200] = 300
+                                Subtotal = Price1[100] + Price2[200] = 300
 
-                TaxAmount = Subtotal[300] × TaxRate[0.18] = 54
+                                TaxAmount = Subtotal[300] × TaxRate[0.18] = 54
 
-                Total = Subtotal[300] + TaxAmount[54] = 354
-                """;
-                
+                                Total = Subtotal[300] + TaxAmount[54] = 354
+                                """;
+
             Assert.Equal(expectedSteps, total.FinalCalculationSteps);
         }
 
@@ -443,7 +454,7 @@ namespace HumanReadableCalculationSteps.Tests
             var groupA = new[] { 10m.As("A1"), 15m.As("A2") };
             var groupB = new[] { 20m.As("B1"), 25m.As("B2") };
             var groupC = new[] { 5m.As("C1"), 10m.As("C2") };
-            
+
             var sumA = groupA.Sum();
             var sumB = groupB.Sum();
             var sumC = groupC.Sum();
@@ -457,7 +468,20 @@ namespace HumanReadableCalculationSteps.Tests
             // sumC = 5 + 10 = 15
             // (25 + 45) * 15 - 50 = 70 * 15 - 50 = 1050 - 50 = 1000
             Assert.Equal(1000m, result.Value);
-            Assert.Equal("(A1[10] + A2[15] + B1[20] + B2[25]) × (C1[5] + C2[10]) - Deduction[50] = 1,000", result.FinalCalculationSteps);
+            Assert.Equal(
+                """
+                  (  A1[10]
+                   + A2[15]
+                   + B1[20]
+                   + B2[25]
+                  )
+                ×
+                  (  C1[5]
+                   + C2[10]
+                  )
+                - Deduction[50]
+                = 1,000
+                """, result.FinalCalculationSteps);
         }
     }
 }

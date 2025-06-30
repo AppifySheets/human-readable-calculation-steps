@@ -373,6 +373,7 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
                     return $"{_caption} = {result}";
                 }
                 
+
                 // For arithmetic expressions (precedence > 0), determine format based on complexity
                 // Check if expression uses wrapped values (precedence -1) AND the CURRENT expression is complex enough to warrant multi-line
                 var shouldShowMultiLine = false;
@@ -395,8 +396,8 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
                             var hasComplexDefinition = rightSide.Length >= 3; // Has format: Name = expression = result
                             
                             // Check if this is a simple multiplication pattern: WrappedValue[X] × OtherValue[Y]
-                            var operatorCount = CountOperators(_caption);
-                            var isSimpleMultiplication = operatorCount == 1 && _caption.Contains(" × ") && 
+                            var operatorCountForWrapped = CountOperators(_caption);
+                            var isSimpleMultiplication = operatorCountForWrapped == 1 && _caption.Contains(" × ") && 
                                                         _caption.Contains(wrappedName + "[");
                             
                             shouldShowMultiLine = hasComplexDefinition && isSimpleMultiplication;
@@ -413,7 +414,11 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
                     var isSimpleStep = uniqueSteps.Count == 0 || 
                         (uniqueSteps.Count == 1 && IsSimpleWrappedValueStep(uniqueSteps[0]));
                     
-                    if (isSimpleStep)
+                    // Check if this is a complex arithmetic expression that should use multiline formatting
+                    var operatorCountForSimple = CountOperators(_caption);
+                    var isComplexArithmeticForSimple = operatorCountForSimple >= 3; // 3 or more operators should use multiline
+                    
+                    if (isSimpleStep && !isComplexArithmeticForSimple)
                     {
                         // Simple arithmetic expressions - show just the calculation = result
                         var result = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
@@ -426,7 +431,11 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
                 var finalValue = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
                 
                 // Avoid duplication if caption is the same as the reconstructed expression
-                if (_caption == finalExpression)
+                // But force 3-part format for complex arithmetic expressions to ensure multiline formatting
+                var operatorCount = CountOperators(_caption);
+                var isComplexArithmetic = operatorCount >= 3;
+                
+                if (_caption == finalExpression && !isComplexArithmetic)
                 {
                     uniqueSteps.Add($"{_caption} = {finalValue}");
                 }
@@ -454,7 +463,40 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
             {
                 // Computed expressions show calculation = result
                 var result = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
-                return $"{_caption} = {result}";
+                
+                // Check if this should use multiline formatting for long expressions
+                // Use multiline for expressions with many operators (>3) or long length (>150 chars)
+                var operatorCount = CountOperators(_caption);
+                var isLongExpression = operatorCount > 3 || _caption.Length > 150;
+                
+                if (isLongExpression && ShouldUseMultilineFormatting(_caption))
+                {
+                    var formattedExpression = FormatExpressionWithValues(_caption);
+                    
+                    // Check if this is a simple arithmetic expression that should use newline before equals
+                    // Simple expressions have variable names like a[8], b[2], Jan[1000], Sep[1250]
+                    var isSimpleArithmetic = System.Text.RegularExpressions.Regex.IsMatch(_caption, 
+                        @"^[a-zA-Z]+\[[^\]]+\](\s*[+\-×÷]\s*[a-zA-Z]+\[[^\]]+\])*$");
+                    
+                    // Also check if it's a complex expression with parentheses that should use newline
+                    // These are expressions like (A + B) × (C + D) - E where the main structure has arithmetic operators
+                    var hasParentheses = _caption.Contains("(") && _caption.Contains(")");
+                    var hasArithmeticStructure = operatorCount >= 1; // Has arithmetic operators
+                    var isComplexArithmetic = hasParentheses && hasArithmeticStructure;
+                    
+                    if (isSimpleArithmetic || isComplexArithmetic)
+                    {
+                        return $"{formattedExpression}\n= {result}";
+                    }
+                    else
+                    {
+                        return $"{formattedExpression} = {result}";
+                    }
+                }
+                else
+                {
+                    return $"{_caption} = {result}";
+                }
             }
         }
     }
@@ -620,7 +662,9 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
                 }
                 else if (line.Trim() == "×" || line.Trim() == "+" || line.Trim() == "-" || line.Trim() == "÷")
                 {
-                    lines[lineIndex] = line.Trim() + " ";
+                    // Add space after operator if the next line starts with parentheses
+                    var needsSpace = lineIndex < lines.Length - 1 && lines[lineIndex + 1].Trim().StartsWith("(");
+                    lines[lineIndex] = needsSpace ? line.Trim() + " " : line.Trim();
                 }
                 else if (line.Contains("DiscountedPrice") && line.Contains("("))
                 {
@@ -719,7 +763,7 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
             }
         }
         
-        return operatorCount > 3 || expression.Length > 80;
+        return operatorCount > 3 || expression.Length > 150;
     }
 
     string FormatExpressionRecursive(string expression, int baseIndentLevel)
@@ -882,7 +926,14 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         var formattedResult = result.ToString();
         
         formattedResult = formattedResult.Replace("× (", "× \n  (");
-        formattedResult = formattedResult.Replace("×\n", "× \n");
+        
+        // Clean up any trailing spaces from all lines
+        var lines = formattedResult.Split('\n');
+        for (int lineIdx = 0; lineIdx < lines.Length; lineIdx++)
+        {
+            lines[lineIdx] = lines[lineIdx].TrimEnd();
+        }
+        formattedResult = string.Join("\n", lines);
         
         return formattedResult;
     }
