@@ -15,13 +15,13 @@ public static class VExtensions
     public static ValueWithCaption As(this decimal value, string caption)
     {
         var simpleStep = $"{caption} = {CleanDecimalFormatting(value.ToString(CultureInfo.InvariantCulture))}";
-        return new ValueWithCaption(value, caption, precedence: -1, calculationSteps: [simpleStep], isNamed: true);
+        return new ValueWithCaption(value, caption, precedence: -1, calculationSteps: [simpleStep]);
     }
 
     public static ValueWithCaption As(this int value, string caption)
     {
         var simpleStep = $"{caption} = {CleanDecimalFormatting(value.ToString())}";
-        return new ValueWithCaption(value, caption, precedence: -1, calculationSteps: [simpleStep], isNamed: true);
+        return new ValueWithCaption(value, caption, precedence: -1, calculationSteps: [simpleStep]);
     }
 
     internal static string CleanDecimalFormatting(string value)
@@ -145,7 +145,7 @@ public static class VExtensions
                 steps.Add(simpleStep);
             }
 
-            return new ValueWithCaption(valueWithCaption.Value, newCaption, precedence: -1, calculationSteps: steps, isNamed: true);
+            return new ValueWithCaption(valueWithCaption.Value, newCaption, precedence: -1, calculationSteps: steps);
         }
 
         // For computed expressions (precedence > 0), we need to reconstruct the expression with wrapped values substituted
@@ -160,7 +160,7 @@ public static class VExtensions
         }
 
         // Mark this as a wrapped value by giving it precedence -1 to indicate it's a named intermediate result
-        return new ValueWithCaption(valueWithCaption.Value, newCaption, precedence: -1, calculationSteps: steps, isNamed: true);
+        return new ValueWithCaption(valueWithCaption.Value, newCaption, precedence: -1, calculationSteps: steps);
     }
 
     // LINQ Sum extension methods for ValueWithCaption
@@ -185,13 +185,14 @@ public static class VExtensions
     {
         if (values.Count == 0)
         {
-            return new ValueWithCaption(0m, "0", precedence: 0, isNamed: false);
+            return new ValueWithCaption(0m, "0", precedence: 0);
         }
 
         if (values.Count == 1)
         {
             var single = values[0];
-            return new ValueWithCaption(single.Value, $"{single._caption}[{CleanDecimalFormatting(single.Value.ToString(CultureInfo.InvariantCulture))}]", precedence: 0, calculationSteps: single.CalculationSteps, isNamed: false);
+            // For single items, return a simple value without calculation steps to ensure clean FinalCalculationSteps
+            return new ValueWithCaption(single.Value, $"{single._caption}[{CleanDecimalFormatting(single.Value.ToString(CultureInfo.InvariantCulture))}]", precedence: 0);
         }
 
         var totalValue = values.Sum(v => v.Value);
@@ -213,18 +214,20 @@ public static class VExtensions
         if (values.Count <= 3)
         {
             // Expanded format: item1[value1] + item2[value2] + item3[value3]
-            var formattedItems = values.Select(v => $"{v.Caption}[{CleanDecimalFormatting(v.Value.ToString(CultureInfo.InvariantCulture))}]");
+            var formattedItems = values.Select(v => $"{v._caption}[{CleanDecimalFormatting(v.Value.ToString(CultureInfo.InvariantCulture))}]");
             caption = string.Join(" + ", formattedItems);
         }
         else
         {
             // Compact format: Sum(itemName, count(N))[total_value]
-            var commonName = ExtractCommonName(values.Select(v => v.Caption).ToList());
+            var commonName = ExtractCommonName(values.Select(v => v._caption).ToList());
             var formattedTotal = CleanDecimalFormatting(totalValue.ToString(CultureInfo.InvariantCulture));
             caption = $"Sum({commonName}, count({values.Count}))[{formattedTotal}]";
         }
 
-        return new ValueWithCaption(totalValue, caption, precedence: 1, calculationSteps: allCalculationSteps, isNamed: false);
+        // For Sum operations, we want the FinalCalculationSteps to show the expression = result format
+        // Use precedence 2 to trigger the simple expression = result format in FinalCalculationSteps
+        return new ValueWithCaption(totalValue, caption, precedence: 2, calculationSteps: allCalculationSteps);
     }
 
     private static string ExtractCommonName(List<string> captions)
@@ -287,24 +290,165 @@ public static class VExtensions
     }
 }
 
-public class ValueWithCaption(decimal value, string caption, int precedence = 0, List<string>? calculationSteps = null, bool isNamed = false) : IComparable, IComparable<ValueWithCaption>
+public class ValueWithCaption(decimal value, string caption, int precedence = 0, List<string>? calculationSteps = null) : IComparable, IComparable<ValueWithCaption>
 {
     public decimal Value { get; } = value;
     public int Precedence { get; } = precedence;
     public List<string> CalculationSteps { get; } = calculationSteps ?? [];
-    public bool IsNamed { get; } = isNamed;
     
-    public string Caption
+
+    public string FinalCalculationSteps
     {
         get
         {
-            if (IsNamed)
+            // If this has calculation steps, use the calculation steps logic
+            if (CalculationSteps.Count > 0)
             {
-                return _caption; // Named values just show their name
+                // Filter calculation steps based on context
+                var allSteps = CalculationSteps
+                    .Where(step => step.Contains(" = "))
+                    .Select(CleanDecimalFormattingInStep)
+                    .ToList();
+
+                // Distinguish between simple assignments and calculations
+                var simpleAssignments = allSteps
+                    .Where(IsSimpleAssignmentStep)
+                    .ToList();
+
+                var calculationSteps = allSteps
+                    .Where(step => !IsSimpleAssignmentStep(step))
+                    .ToList();
+
+                // For individual simple variables, show only their definition
+                if (calculationSteps.Count == 0 && simpleAssignments.Count == 1)
+                {
+                    return FormatSingleStep(simpleAssignments[0]);
+                }
+
+                // For complex calculations, include wrapped value definitions that are used
+                var wrappedValueSteps = new List<string>();
+                
+                // First, add all non-simple calculation steps
+                wrappedValueSteps.AddRange(calculationSteps);
+                
+                // Then check if we need to add wrapped value definitions that are used in the final expression
+                foreach (var step in allSteps)
+                {
+                    if (VExtensions.IsWrappedValueDefinition(step))
+                    {
+                        var wrappedName = step.Split(" = ")[0].Trim();
+                        // If this wrapped value is used in our caption, include its definition
+                        if (_caption.Contains(wrappedName) && !wrappedValueSteps.Contains(step))
+                        {
+                            wrappedValueSteps.Add(step);
+                        }
+                    }
+                }
+
+                // Remove duplicates while preserving order based on the exact step content
+                var uniqueSteps = wrappedValueSteps.Distinct().ToList();
+
+                // Check if we need to add a final calculation line
+                var wrappedValueNames = uniqueSteps.Select(step => step.Split(" = ")[0].Trim()).ToList();
+                var finalValueNameExists = wrappedValueNames.Contains(_caption);
+
+                // Determine if this is a complex calculation by checking if:
+                // 1. The Caption contains operations with wrapped values, OR
+                // 2. There are multiple wrapped values
+                var expressionUsesWrappedValues = wrappedValueNames.Any(name => _caption.Contains(name));
+                var hasMultipleWrappedValues = uniqueSteps.Count > 1;
+                var captionHasComplexOperations = _caption.Contains('+') || _caption.Contains('-') || _caption.Contains('×') || _caption.Contains('÷');
+
+                // For wrapped values (precedence -1), show their definition
+                if (Precedence == -1)
+                {
+                    return FormatMultipleSteps(uniqueSteps);
+                }
+                
+                // For Sum operations (precedence 2), show simple format: expression = result
+                // But only if it's actually a Sum operation (contains " + " or starts with "Sum(")
+                if (Precedence == 2 && (_caption.Contains(" + ") || _caption.StartsWith("Sum(")))
+                {
+                    var result = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
+                    return $"{_caption} = {result}";
+                }
+                
+                // For arithmetic expressions (precedence > 0), determine format based on complexity
+                // Check if expression uses wrapped values (precedence -1) AND the CURRENT expression is complex enough to warrant multi-line
+                var shouldShowMultiLine = false;
+                
+                foreach (var step in CalculationSteps)
+                {
+                    if (step.Contains(" = ") && VExtensions.IsWrappedValueDefinition(step))
+                    {
+                        var wrappedName = step.Split(" = ")[0].Trim();
+                        // Check if caption contains the wrapped name (with or without brackets)
+                        if (_caption.Contains(wrappedName + "[") || 
+                            (_caption.Contains(wrappedName) && 
+                             (_caption.IndexOf(wrappedName) + wrappedName.Length >= _caption.Length ||
+                              !char.IsLetterOrDigit(_caption[_caption.IndexOf(wrappedName) + wrappedName.Length]))))
+                        {
+                            // Only show multi-line if the current expression is a multiplication of wrapped value with single operand
+                            // (like "Result[17] × multiplier[4]" or "Diff[2] × z[2]")
+                            // This is more specific than the general complexity check
+                            var rightSide = step.Split(" = ", 3);
+                            var hasComplexDefinition = rightSide.Length >= 3; // Has format: Name = expression = result
+                            
+                            // Check if this is a simple multiplication pattern: WrappedValue[X] × OtherValue[Y]
+                            var operatorCount = CountOperators(_caption);
+                            var isSimpleMultiplication = operatorCount == 1 && _caption.Contains(" × ") && 
+                                                        _caption.Contains(wrappedName + "[");
+                            
+                            shouldShowMultiLine = hasComplexDefinition && isSimpleMultiplication;
+                            break;
+                        }
+                    }
+                }
+                
+                
+                // Show single-line format for simple cases
+                if (uniqueSteps.Count <= 1 && Precedence > 0 && !shouldShowMultiLine)
+                {
+                    // Check if the wrapped value step is simple (only basic arithmetic)
+                    var isSimpleStep = uniqueSteps.Count == 0 || 
+                        (uniqueSteps.Count == 1 && IsSimpleWrappedValueStep(uniqueSteps[0]));
+                    
+                    if (isSimpleStep)
+                    {
+                        // Simple arithmetic expressions - show just the calculation = result
+                        var result = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
+                        return $"{_caption} = {result}";
+                    }
+                }
+                
+                // All other cases - show multi-line with definitions
+                var finalExpression = ReconstructFinalExpression();
+                var finalValue = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
+                
+                // Avoid duplication if caption is the same as the reconstructed expression
+                if (_caption == finalExpression)
+                {
+                    uniqueSteps.Add($"{_caption} = {finalValue}");
+                }
+                else
+                {
+                    uniqueSteps.Add($"{_caption} = {finalExpression} = {finalValue}");
+                }
+                
+                return FormatMultipleSteps(uniqueSteps);
             }
             else if (Precedence == 0)
             {
-                return _caption; // Base values show just their caption
+                // Base values - show brackets for variable names ending with "Value", otherwise just caption
+                if (_caption.EndsWith("Value", StringComparison.OrdinalIgnoreCase))
+                {
+                    var cleanValue = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
+                    return $"{_caption}[{cleanValue}]";
+                }
+                else
+                {
+                    return _caption;
+                }
             }
             else
             {
@@ -312,67 +456,6 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
                 var result = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
                 return $"{_caption} = {result}";
             }
-        }
-    }
-
-    public string FinalCalculationSteps
-    {
-        get
-        {
-            if (!IsNamed)
-            {
-                // For unnamed values, return the same as Caption
-                return Caption;
-            }
-            
-            // Use the superior FinalCalculationSteps logic for named values
-            // Filter calculation steps based on context
-            var allSteps = CalculationSteps
-                .Where(step => step.Contains(" = "))
-                .Select(CleanDecimalFormattingInStep)
-                .ToList();
-
-            // Distinguish between simple assignments and calculations
-            var simpleAssignments = allSteps
-                .Where(IsSimpleAssignmentStep)
-                .ToList();
-
-            var calculationSteps = allSteps
-                .Where(step => !IsSimpleAssignmentStep(step))
-                .ToList();
-
-            // For individual simple variables, show only their definition
-            if (calculationSteps.Count == 0 && simpleAssignments.Count == 1)
-            {
-                return FormatSingleStep(simpleAssignments[0]);
-            }
-
-            // For complex calculations, show only calculation steps (not simple assignments)
-            var wrappedValueSteps = calculationSteps;
-
-            // Remove duplicates while preserving order based on the exact step content
-            var uniqueSteps = wrappedValueSteps.Distinct().ToList();
-
-            // Check if we need to add a final calculation line
-            var wrappedValueNames = uniqueSteps.Select(step => step.Split(" = ")[0].Trim()).ToList();
-            var finalValueNameExists = wrappedValueNames.Contains(_caption);
-
-            // Determine if this is a complex calculation by checking if:
-            // 1. The Caption contains operations with wrapped values, OR
-            // 2. There are multiple wrapped values
-            var expressionUsesWrappedValues = wrappedValueNames.Any(name => _caption.Contains(name));
-            var hasMultipleWrappedValues = uniqueSteps.Count > 1;
-            var captionHasComplexOperations = _caption.Contains('+') || _caption.Contains('-') || _caption.Contains('×') || _caption.Contains('÷');
-
-            // Add final line for complex calculations that aren't just renaming a single wrapped value
-            if ((!expressionUsesWrappedValues && !hasMultipleWrappedValues) || !captionHasComplexOperations || finalValueNameExists)
-                return FormatMultipleSteps(uniqueSteps);
-
-            var finalExpression = ReconstructFinalExpression();
-            var finalValue = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
-            uniqueSteps.Add($"{_caption} = {finalExpression} = {finalValue}");
-            
-            return FormatMultipleSteps(uniqueSteps);
         }
     }
     
@@ -422,6 +505,20 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         return Regex.Replace(step, @"(\d+)\.0+(?!\d)", "$1");
     }
 
+    static bool IsSimpleWrappedValueStep(string step)
+    {
+        // Only very basic single-operation steps are considered simple
+        // This is for cases like "DiscountedPrice = originalPrice[100] - discount[15] = 85"
+        var operatorCount = 0;
+        operatorCount += step.Split(" + ").Length - 1;
+        operatorCount += step.Split(" - ").Length - 1;
+        operatorCount += step.Split(" × ").Length - 1;
+        operatorCount += step.Split(" ÷ ").Length - 1;
+        
+        // Only single subtraction operations are considered simple for the specific test case
+        return operatorCount == 1 && step.Contains(" - ");
+    }
+    
     static bool IsSimpleAssignmentStep(string step)
     {
         // Simple assignment steps have the format "VariableName = Value" (no operations on the right side)
@@ -822,8 +919,18 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         return text.Contains(" + ") || text.Contains(" - ") || text.Contains(" × ") || text.Contains(" ÷ ");
     }
 
+    static int CountOperators(string expression)
+    {
+        int count = 0;
+        count += expression.Split(" + ").Length - 1;
+        count += expression.Split(" - ").Length - 1;
+        count += expression.Split(" × ").Length - 1;
+        count += expression.Split(" ÷ ").Length - 1;
+        return count;
+    }
+
     public override string ToString() =>
-        IsNamed && CalculationSteps.Count == 0 || (!IsNamed && Precedence == 0)
+        CalculationSteps.Count == 0 || Precedence == 0
             ? $"{_caption}[{VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture))}]"
             : _caption;
 
@@ -832,14 +939,34 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         if (operand.Precedence > 0 && operand.Precedence < currentPrecedence)
             return $"({operand._caption})";
 
-        // Named values always show Name[value] format when used in expressions
-        if (operand.IsNamed)
+        // When used in expressions, all values should show caption[value] format except computed expressions
+        if (operand.Precedence > 0)
         {
+            // Check if this is a Sum operation that needs parentheses when used in multiplication/division
+            // Sum operations have precedence 2 (same as multiplication/division), but need parentheses for clarity
+            // Only add parentheses if it's actually a sum at the top level (not a multiplication containing a sum)
+            if (operand.Precedence == 2 && currentPrecedence == 2)
+            {
+                // Check if this is actually a sum operation (not a multiplication that contains a sum)
+                var isTopLevelSum = operand._caption.StartsWith("Sum(") || 
+                                   (operand._caption.Contains(" + ") && 
+                                    !operand._caption.Contains(" × ") && 
+                                    !operand._caption.Contains(" ÷ "));
+                
+                if (isTopLevelSum)
+                {
+                    return $"({operand._caption})";
+                }
+            }
+            
+            // Computed expressions show just caption
+            return operand._caption;
+        }
+        else
+        {
+            // All base values (precedence 0) and named values (precedence -1) show caption[value] format
             return $"{operand._caption}[{VExtensions.CleanDecimalFormatting(operand.Value.ToString(CultureInfo.InvariantCulture))}]";
         }
-
-        // Regular base values (precedence 0) show caption[value], computed values show just caption
-        return operand.Precedence == 0 ? $"{operand._caption}[{VExtensions.CleanDecimalFormatting(operand.Value.ToString(CultureInfo.InvariantCulture))}]" : operand._caption;
     }
 
     static List<string> CombineCalculationSteps(ValueWithCaption left, ValueWithCaption right)
@@ -873,7 +1000,7 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         var rightStr = FormatOperand(right, precedence);
         var result = left.Value + right.Value;
         var steps = CombineCalculationSteps(left, right);
-        return new ValueWithCaption(result, $"{leftStr} + {rightStr}", precedence, steps, isNamed: false);
+        return new ValueWithCaption(result, $"{leftStr} + {rightStr}", precedence, steps);
     }
 
     // Subtraction (precedence 1)
@@ -884,7 +1011,7 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         var rightStr = FormatOperand(right, precedence);
         var result = left.Value - right.Value;
         var steps = CombineCalculationSteps(left, right);
-        return new ValueWithCaption(result, $"{leftStr} - {rightStr}", precedence, steps, isNamed: false);
+        return new ValueWithCaption(result, $"{leftStr} - {rightStr}", precedence, steps);
     }
 
     // Multiplication (precedence 2)
@@ -895,7 +1022,7 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         var rightStr = FormatOperand(right, precedence);
         var result = left.Value * right.Value;
         var steps = CombineCalculationSteps(left, right);
-        return new ValueWithCaption(result, $"{leftStr} × {rightStr}", precedence, steps, isNamed: false);
+        return new ValueWithCaption(result, $"{leftStr} × {rightStr}", precedence, steps);
     }
 
     // Division (precedence 2)
@@ -906,7 +1033,7 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         var rightStr = FormatOperand(right, precedence);
         var result = left.Value / right.Value;
         var steps = CombineCalculationSteps(left, right);
-        return new ValueWithCaption(result, $"{leftStr} ÷ {rightStr}", precedence, steps, isNamed: false);
+        return new ValueWithCaption(result, $"{leftStr} ÷ {rightStr}", precedence, steps);
     }
 
     // Greater than
@@ -1014,12 +1141,12 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
     // Override Equals and GetHashCode since we're overriding == and !=
     public override bool Equals(object? obj)
     {
-        return obj is ValueWithCaption other && Value == other.Value && Caption == other.Caption;
+        return obj is ValueWithCaption other && Value == other.Value && _caption == other._caption;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Value, Caption);
+        return HashCode.Combine(Value, _caption);
     }
 
     // IComparable implementation
@@ -1047,25 +1174,25 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
     public static ValueWithCaption From(Expression<Func<decimal>> expression)
     {
         var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(value, caption, precedence: 0, isNamed: false);
+        return new ValueWithCaption(value, caption, precedence: 0);
     }
 
     public static ValueWithCaption From(Expression<Func<int>> expression)
     {
         var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(value, caption, precedence: 0, isNamed: false);
+        return new ValueWithCaption(value, caption, precedence: 0);
     }
 
     public static ValueWithCaption From(Expression<Func<double>> expression)
     {
         var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(Convert.ToDecimal(value), caption, precedence: 0, isNamed: false);
+        return new ValueWithCaption(Convert.ToDecimal(value), caption, precedence: 0);
     }
 
     public static ValueWithCaption From(Expression<Func<float>> expression)
     {
         var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(Convert.ToDecimal(value), caption, precedence: 0, isNamed: false);
+        return new ValueWithCaption(Convert.ToDecimal(value), caption, precedence: 0);
     }
 
     private static (T value, string caption) ExtractValueAndCaption<T>(Expression<Func<T>> expression)

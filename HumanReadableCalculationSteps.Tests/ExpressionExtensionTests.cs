@@ -13,7 +13,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(100m, price.Value);
-            Assert.Equal("100", price.Caption);
+            Assert.Equal("100", price.FinalCalculationSteps);
         }
         
         [Fact]
@@ -24,7 +24,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(123.45m, price.Value);
-            Assert.Equal("123.45", price.Caption);  
+            Assert.Equal("123.45", price.FinalCalculationSteps);  
         }
         
         [Fact]
@@ -35,7 +35,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(5m, count.Value);
-            Assert.Equal("5", count.Caption);
+            Assert.Equal("5", count.FinalCalculationSteps);
         }
         
         [Fact]
@@ -46,7 +46,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(0.18m, rate.Value);
-            Assert.Equal("0.18", rate.Caption);
+            Assert.Equal("0.18", rate.FinalCalculationSteps);
         }
         
         [Fact]
@@ -57,7 +57,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(2.5m, factor.Value);
-            Assert.Equal("2.5", factor.Caption);
+            Assert.Equal("2.5", factor.FinalCalculationSteps);
         }
         
         [Fact]
@@ -71,7 +71,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(100m, price.Value);
-            Assert.Equal("basePrice", price.Caption);
+            Assert.Equal("basePrice", price.FinalCalculationSteps);
         }
         
         [Fact]
@@ -89,13 +89,13 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(42m, intResult.Value);
-            Assert.Equal("intValue", intResult.Caption);
+            Assert.Equal("intValue[42]", intResult.FinalCalculationSteps);
             
             Assert.Equal(3.14m, doubleResult.Value);
-            Assert.Equal("doubleValue", doubleResult.Caption);
+            Assert.Equal("doubleValue[3.14]", doubleResult.FinalCalculationSteps);
             
             Assert.Equal(1.5m, floatResult.Value);
-            Assert.Equal("floatValue", floatResult.Caption);
+            Assert.Equal("floatValue[1.5]", floatResult.FinalCalculationSteps);
         }
         
         [Fact]
@@ -109,7 +109,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(99.99m, price.Value);
-            Assert.Equal("Price", price.Caption);
+            Assert.Equal("Price", price.FinalCalculationSteps);
         }
         
         [Fact]
@@ -123,7 +123,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(150.00m, cost.Value);
-            Assert.Equal("Product Cost", cost.Caption);
+            Assert.Equal("Product Cost", cost.FinalCalculationSteps);
         }
         
         [Fact]
@@ -137,7 +137,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(75.50m, price.Value);
-            Assert.Equal("Price", price.Caption);
+            Assert.Equal("Price", price.FinalCalculationSteps);
         }
         
         [Fact]
@@ -152,7 +152,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(18m, tax.Value);
-            Assert.Equal("100[100] × 0.18[0.18] = 18", tax.Caption);
+            Assert.Equal("100[100] × 0.18[0.18] = 18", tax.FinalCalculationSteps);
         }
         
         [Fact]
@@ -170,7 +170,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(18m, tax.Value);
-            Assert.Equal("price[100] × rate[0.18] = 18", tax.Caption);
+            Assert.Equal("price[100] × rate[0.18] = 18", tax.FinalCalculationSteps);
         }
         
         [Fact]
@@ -190,7 +190,7 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(160m, result.Value);
-            Assert.Equal("(base1[50] + base2[30]) × multiplier[2] = 160", result.Caption);
+            Assert.Equal("(base1[50] + base2[30]) × multiplier[2] = 160", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -210,10 +210,10 @@ namespace HumanReadableCalculationSteps.Tests
             
             // Assert
             Assert.Equal(85m, discountedPrice.Value);
-            Assert.Equal("DiscountedPrice", discountedPrice.Caption);
+            Assert.Equal("DiscountedPrice = originalPrice[100] - discount[15] = 85", discountedPrice.FinalCalculationSteps);
             
             Assert.Equal(100.3m, finalPrice.Value);
-            Assert.Equal("DiscountedPrice[85] + DiscountedPrice[85] × 0.18[0.18] = 100.3", finalPrice.Caption);
+            Assert.Equal("DiscountedPrice[85] + DiscountedPrice[85] × 0.18[0.18] = 100.3", finalPrice.FinalCalculationSteps);
         }
         
         [Fact]
