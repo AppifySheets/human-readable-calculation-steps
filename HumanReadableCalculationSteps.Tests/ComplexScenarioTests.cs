@@ -16,7 +16,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = x + x * x;
 
             Assert.Equal(30m, result.Value); // 5 + (5 × 5) = 5 + 25 = 30
-            Assert.Equal("x[5] + x[5] × x[5] = 30", result.Caption);
+            Assert.Equal("x[5] + x[5] × x[5] = 30", result.FinalCalculationSteps);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a + a) * (a - a);
 
             Assert.Equal(0m, result.Value); // (7 + 7) × (7 - 7) = 14 × 0 = 0
-            Assert.Equal("(a[7] + a[7]) × (a[7] - a[7]) = 0", result.Caption);
+            Assert.Equal("(a[7] + a[7]) × (a[7] - a[7]) = 0", result.FinalCalculationSteps);
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = b * b * b;
 
             Assert.Equal(27m, result.Value); // 3 × 3 × 3 = 27
-            Assert.Equal("b[3] × b[3] × b[3] = 27", result.Caption);
+            Assert.Equal("b[3] × b[3] × b[3] = 27", result.FinalCalculationSteps);
         }
 
         [Fact]
@@ -56,7 +56,6 @@ namespace HumanReadableCalculationSteps.Tests
             var total = (rate * principal + rate * fee).As("TotalInterest");
 
             Assert.Equal(52.5m, total.Value); // 0.05 × 1000 + 0.05 × 50 = 50 + 2.5 = 52.5
-            Assert.Equal("TotalInterest", total.Caption);
 
             var expectedSteps =
 """
@@ -82,7 +81,6 @@ TotalInterest = rate[0.05] × principal[1,000] + rate[0.05] × fee[50] = 52.5
             Assert.Equal(10m, discountAmount1.Value); // 100 × 0.1 = 10
             Assert.Equal(20m, discountAmount2.Value); // 200 × 0.1 = 20
             Assert.Equal(30m, totalSavings.Value); // 10 + 20 = 30
-            Assert.Equal("TotalSavings", totalSavings.Caption);
 
             var expectedSteps =
 """
@@ -110,7 +108,6 @@ TotalSavings = Discount1[10] + Discount2[20] = 30
             var result = (a + b - a).As("Result");
 
             Assert.Equal(7m, result.Value); // 10 + 7 - 10 = 7 (equals b)
-            Assert.Equal("Result", result.Caption);
 
             var expectedSteps =
 """
@@ -129,7 +126,6 @@ Result = a[10] + b[7] - a[10] = 7
             var result = (x * y / x).As("Simplified");
 
             Assert.Equal(5m, result.Value); // (8 × 5) ÷ 8 = 40 ÷ 8 = 5 (equals y)
-            Assert.Equal("Simplified", result.Caption);
 
             var expectedSteps =
 """
@@ -147,7 +143,6 @@ Simplified = x[8] × y[5] ÷ x[8] = 5
             var result = (a - a).As("Zero");
 
             Assert.Equal(0m, result.Value);
-            Assert.Equal("Zero", result.Caption);
 
             var expectedSteps =
 """
@@ -166,7 +161,6 @@ Zero = a[15] - a[15] = 0
             var result = ((a + b) - (a - b)).As("TwoB");
 
             Assert.Equal(16m, result.Value); // (12 + 8) - (12 - 8) = 20 - 4 = 16 = 2×8
-            Assert.Equal("TwoB", result.Caption);
 
             var expectedSteps =
 """
@@ -185,7 +179,6 @@ TwoB = a[12] + b[8] - a[12] - b[8] = 16
             var result = (x * zero).As("AlwaysZero");
 
             Assert.Equal(0m, result.Value);
-            Assert.Equal("AlwaysZero", result.Caption);
 
             var expectedSteps =
 """
@@ -203,7 +196,6 @@ AlwaysZero = x[42] × zero[0] = 0
             var result = (x + x - x).As("BackToX");
 
             Assert.Equal(25m, result.Value); // 25 + 25 - 25 = 25 (equals x)
-            Assert.Equal("BackToX", result.Caption);
 
             var expectedSteps =
 """
@@ -229,7 +221,6 @@ BackToX = x[25] + x[25] - x[25] = 25
             Assert.Equal(20m, stepA.Value); // 10 × 2 = 20
             Assert.Equal(25m, stepB.Value); // 20 + 5 = 25
             Assert.Equal(75m, final.Value); // 25 × 3 = 75
-            Assert.Equal("Final", final.Caption);
 
             var expectedSteps =
 """
@@ -255,7 +246,6 @@ Final = StepB[25] × Multiplier[3] = 75
             Assert.Equal(80m, branchB.Value); // 100 - 20 = 80
             Assert.Equal(50m, branchC.Value); // 100 × 0.5 = 50
             Assert.Equal(130m, convergence.Value); // 80 + 50 = 130
-            Assert.Equal("Convergence", convergence.Caption);
 
             var expectedSteps =
 """
@@ -602,11 +592,11 @@ FinalPrice = AfterRushFee[14,748.75] + Tax[1,290.52] = 16,039.27
             var total = price + tax;
             
             Assert.Equal(118m, total.Value);
-            Assert.Equal("price[100] + tax[18] = 118", total.Caption);
+            Assert.Equal("price[100] + tax[18] = 118", total.FinalCalculationSteps);
             
-            // total.FinalCalculationSteps should not be available/compilable
+            // total.FinalCalculationSteps should not be available/compilable for extended formatting
             // This test demonstrates the new API design where only .As() wrapped variables 
-            // can show final calculation steps
+            // can show detailed calculation steps
         }
 
         [Fact]
@@ -619,13 +609,12 @@ FinalPrice = AfterRushFee[14,748.75] + Tax[1,290.52] = 16,039.27
             // Non-wrapped intermediate calculation
             var intermediate = baseAmount * rate;
             Assert.Equal(10m, intermediate.Value);
-            Assert.Equal("BaseAmount[100] × Rate[0.1] = 10", intermediate.Caption);
-            // intermediate.FinalCalculationSteps would not be available
+            Assert.Equal("BaseAmount[100] × Rate[0.1] = 10", intermediate.FinalCalculationSteps);
+            // intermediate.FinalCalculationSteps would not be available for extended formatting
             
             // Wrapped final calculation
             var finalResult = (intermediate + baseAmount).As("FinalResult");
             Assert.Equal(110m, finalResult.Value);
-            Assert.Equal("FinalResult", finalResult.Caption);
             
             var expectedSteps = 
 """

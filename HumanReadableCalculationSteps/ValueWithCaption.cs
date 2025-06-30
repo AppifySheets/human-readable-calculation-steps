@@ -314,18 +314,18 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
             }
         }
     }
-    
-    internal readonly string _caption = caption;
-    
+
     public string FinalCalculationSteps
     {
         get
         {
             if (!IsNamed)
             {
-                throw new InvalidOperationException("FinalCalculationSteps is only available for named values (created with .As())");
+                // For unnamed values, return the same as Caption
+                return Caption;
             }
             
+            // Use the superior FinalCalculationSteps logic for named values
             // Filter calculation steps based on context
             var allSteps = CalculationSteps
                 .Where(step => step.Contains(" = "))
@@ -375,6 +375,9 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
             return FormatMultipleSteps(uniqueSteps);
         }
     }
+    
+    internal readonly string _caption = caption;
+    
     
     string ReconstructFinalExpression()
     {

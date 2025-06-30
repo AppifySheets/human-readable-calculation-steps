@@ -13,7 +13,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a + b;
             
             Assert.Equal(15m, result.Value);
-            Assert.Equal("a[10] + b[5] = 15", result.Caption);
+            Assert.Equal("a[10] + b[5] = 15", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -25,7 +25,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a - b;
             
             Assert.Equal(5m, result.Value);
-            Assert.Equal("a[10] - b[5] = 5", result.Caption);
+            Assert.Equal("a[10] - b[5] = 5", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -37,7 +37,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * b;
             
             Assert.Equal(50m, result.Value);
-            Assert.Equal("a[10] × b[5] = 50", result.Caption);
+            Assert.Equal("a[10] × b[5] = 50", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -49,7 +49,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a / b;
             
             Assert.Equal(2m, result.Value);
-            Assert.Equal("a[10] ÷ b[5] = 2", result.Caption);
+            Assert.Equal("a[10] ÷ b[5] = 2", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -63,7 +63,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a + b * c;
             
             Assert.Equal(20m, result.Value);
-            Assert.Equal("a[10] + b[5] × c[2] = 20", result.Caption);
+            Assert.Equal("a[10] + b[5] × c[2] = 20", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -77,7 +77,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * b + c;
             
             Assert.Equal(52m, result.Value);
-            Assert.Equal("a[10] × b[5] + c[2] = 52", result.Caption);
+            Assert.Equal("a[10] × b[5] + c[2] = 52", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -91,7 +91,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a - b * c;
             
             Assert.Equal(12m, result.Value);
-            Assert.Equal("a[20] - b[4] × c[2] = 12", result.Caption);
+            Assert.Equal("a[20] - b[4] × c[2] = 12", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -105,7 +105,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * b - c;
             
             Assert.Equal(78m, result.Value);
-            Assert.Equal("a[20] × b[4] - c[2] = 78", result.Caption);
+            Assert.Equal("a[20] × b[4] - c[2] = 78", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -119,7 +119,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a - b / c;
             
             Assert.Equal(18m, result.Value);
-            Assert.Equal("a[20] - b[4] ÷ c[2] = 18", result.Caption);
+            Assert.Equal("a[20] - b[4] ÷ c[2] = 18", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -134,7 +134,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a + b * c - d;
             
             Assert.Equal(22m, result.Value);
-            Assert.Equal("a[12] + b[3] × c[4] - d[2] = 22", result.Caption);
+            Assert.Equal("a[12] + b[3] × c[4] - d[2] = 22", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -149,7 +149,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * b + c * d;
             
             Assert.Equal(44m, result.Value);
-            Assert.Equal("a[12] × b[3] + c[4] × d[2] = 44", result.Caption);
+            Assert.Equal("a[12] × b[3] + c[4] × d[2] = 44", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -163,7 +163,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a + b + c;
             
             Assert.Equal(27m, result.Value);
-            Assert.Equal("a[20] + b[5] + c[2] = 27", result.Caption);
+            Assert.Equal("a[20] + b[5] + c[2] = 27", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -177,7 +177,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a - b - c;
             
             Assert.Equal(13m, result.Value);
-            Assert.Equal("a[20] - b[5] - c[2] = 13", result.Caption);
+            Assert.Equal("a[20] - b[5] - c[2] = 13", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -191,7 +191,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * b * c;
             
             Assert.Equal(200m, result.Value);
-            Assert.Equal("a[20] × b[5] × c[2] = 200", result.Caption);
+            Assert.Equal("a[20] × b[5] × c[2] = 200", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -205,7 +205,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a / b / c;
             
             Assert.Equal(2m, result.Value);
-            Assert.Equal("a[20] ÷ b[5] ÷ c[2] = 2", result.Caption);
+            Assert.Equal("a[20] ÷ b[5] ÷ c[2] = 2", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -221,7 +221,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a + b * c + d * e;
             
             Assert.Equal(31m, result.Value);
-            Assert.Equal("a[8] + b[2] × c[4] + d[3] × e[5] = 31", result.Caption);
+            Assert.Equal("a[8] + b[2] × c[4] + d[3] × e[5] = 31", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -237,7 +237,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * b + c * d - e;
             
             Assert.Equal(23m, result.Value);
-            Assert.Equal("a[8] × b[2] + c[4] × d[3] - e[5] = 23", result.Caption);
+            Assert.Equal("a[8] × b[2] + c[4] × d[3] - e[5] = 23", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -253,7 +253,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a / b - c + d * e;
             
             Assert.Equal(15m, result.Value);
-            Assert.Equal("a[8] ÷ b[2] - c[4] + d[3] × e[5] = 15", result.Caption);
+            Assert.Equal("a[8] ÷ b[2] - c[4] + d[3] × e[5] = 15", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -265,7 +265,7 @@ namespace HumanReadableCalculationSteps.Tests
             var tax = basePrice * taxRate;
             
             Assert.Equal(18m, tax.Value);
-            Assert.Equal("საბაზო ფასი[100] × დღგ[0.18] = 18", tax.Caption);
+            Assert.Equal("საბაზო ფასი[100] × დღგ[0.18] = 18", tax.FinalCalculationSteps);
         }
         
         [Fact]
@@ -277,7 +277,7 @@ namespace HumanReadableCalculationSteps.Tests
             var discountedPrice = basePrice - discount;
             
             Assert.Equal(85m, discountedPrice.Value);
-            Assert.Equal("საბაზო ფასი[100] - ფასდაკლება[15] = 85", discountedPrice.Caption);
+            Assert.Equal("საბაზო ფასი[100] - ფასდაკლება[15] = 85", discountedPrice.FinalCalculationSteps);
         }
         
         [Fact]
@@ -296,7 +296,7 @@ namespace HumanReadableCalculationSteps.Tests
             var finalPrice = discountedPrice + tax * multiplier;
             
             Assert.Equal(2245m, finalPrice.Value);
-            Assert.Equal("საბაზო ფასი[100] - ფასდაკლება[15] + საბაზო ფასი[100] × დღგ[0.18] × ასოცი[120] = 2,245", finalPrice.Caption);
+            Assert.Equal("საბაზო ფასი[100] - ფასდაკლება[15] + საბაზო ფასი[100] × დღგ[0.18] × ასოცი[120] = 2,245", finalPrice.FinalCalculationSteps);
         }
         
         [Theory]
@@ -340,7 +340,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a + b) * c;
             
             Assert.Equal(20m, result.Value);
-            Assert.Equal("(a[2] + b[3]) × c[4] = 20", result.Caption);
+            Assert.Equal("(a[2] + b[3]) × c[4] = 20", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -354,7 +354,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a - b) * c;
             
             Assert.Equal(14m, result.Value);
-            Assert.Equal("(a[10] - b[3]) × c[2] = 14", result.Caption);
+            Assert.Equal("(a[10] - b[3]) × c[2] = 14", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -368,7 +368,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a + b) / c;
             
             Assert.Equal(3m, result.Value);
-            Assert.Equal("(a[12] + b[3]) ÷ c[5] = 3", result.Caption);
+            Assert.Equal("(a[12] + b[3]) ÷ c[5] = 3", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -382,7 +382,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * (b + c);
             
             Assert.Equal(14m, result.Value);
-            Assert.Equal("a[2] × (b[3] + c[4]) = 14", result.Caption);
+            Assert.Equal("a[2] × (b[3] + c[4]) = 14", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -396,7 +396,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a / (b - c);
             
             Assert.Equal(20m / 6m, result.Value);
-            Assert.Equal("a[20] ÷ (b[8] - c[2]) = 3.33", result.Caption);
+            Assert.Equal("a[20] ÷ (b[8] - c[2]) = 3.33", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -411,7 +411,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a + b) * (c - d);
             
             Assert.Equal(-5m, result.Value);
-            Assert.Equal("(a[2] + b[3]) × (c[4] - d[5]) = -5", result.Caption);
+            Assert.Equal("(a[2] + b[3]) × (c[4] - d[5]) = -5", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -426,7 +426,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a + b) / (c + d);
             
             Assert.Equal(3m, result.Value);
-            Assert.Equal("(a[10] + b[5]) ÷ (c[3] + d[2]) = 3", result.Caption);
+            Assert.Equal("(a[10] + b[5]) ÷ (c[3] + d[2]) = 3", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -441,7 +441,7 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * (b + c) - d;
             
             Assert.Equal(26m, result.Value);
-            Assert.Equal("a[6] × (b[2] + c[3]) - d[4] = 26", result.Caption);
+            Assert.Equal("a[6] × (b[2] + c[3]) - d[4] = 26", result.FinalCalculationSteps);
         }
         
         [Fact]
@@ -457,11 +457,11 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a * b) + (c * d) - e;
             
             Assert.Equal(25m, result.Value);
-            Assert.Equal("a[2] × b[3] + c[4] × d[5] - e[1] = 25", result.Caption);
+            Assert.Equal("a[2] × b[3] + c[4] × d[5] - e[1] = 25", result.FinalCalculationSteps);
         }
         
         [Fact]
-        public void WrappingOperationResult_WithNewCaption()
+        public void WrappingOperationResult_WithNewFinalCalculationSteps()
         {
             var basePrice = 100m.As("საბაზო ფასი");
             var taxRate = 0.18m.As("დღგ");
@@ -470,7 +470,6 @@ namespace HumanReadableCalculationSteps.Tests
             var tax = (basePrice * taxRate).As("TaxValue");
             
             Assert.Equal(18m, tax.Value);
-            Assert.Equal("TaxValue", tax.Caption);
             
             Assert.Equal("TaxValue = საბაზო ფასი[100] × დღგ[0.18] = 18", tax.FinalCalculationSteps);
         }
@@ -489,7 +488,7 @@ namespace HumanReadableCalculationSteps.Tests
             var finalPrice = discountedPrice + tax;
             
             Assert.Equal(103m, finalPrice.Value); // 85 + 18 = 103
-            Assert.Equal("საბაზო ფასი[100] - ფასდაკლება[15] + TaxValue[18] = 103", finalPrice.Caption);
+            Assert.Equal("საბაზო ფასი[100] - ფასდაკლება[15] + TaxValue[18] = 103", finalPrice.FinalCalculationSteps);
             
             Assert.Equal("TaxValue = საბაზო ფასი[100] × დღგ[0.18] = 18", tax.FinalCalculationSteps);
         }
@@ -509,7 +508,7 @@ namespace HumanReadableCalculationSteps.Tests
             var finalResult = complexCalc * multiplier;
             
             Assert.Equal(68m, finalResult.Value); // (10 + 10 - 3) * 4 = 17 * 4 = 68
-            Assert.Equal("Result[17] × multiplier[4] = 68", finalResult.Caption);
+            Assert.Equal("Result[17] × multiplier[4] = 68", finalResult.FinalCalculationSteps);
             
             // Check that the Result definition is captured
             Assert.Single(complexCalc.CalculationSteps);
@@ -533,10 +532,8 @@ namespace HumanReadableCalculationSteps.Tests
             var volume = (area * height).As("Volume");
             
             Assert.Equal(96m, area.Value);
-            Assert.Equal("Area", area.Caption);
             
             Assert.Equal(480m, volume.Value);
-            Assert.Equal("Volume", volume.Caption);
             
             Assert.Equal("Area = length[12] × width[8] = 96", area.FinalCalculationSteps);
             Assert.Equal(
@@ -563,7 +560,6 @@ Volume = Area[96] × height[5] = 480
             Assert.Equal(5m, tax1.Value);
             Assert.Equal(4.5m, tax2.Value);
             Assert.Equal(9.5m, totalTax.Value);
-            Assert.Equal("TotalTax", totalTax.Caption);
 
             // Check calculation steps
             Assert.Equal(3, totalTax.CalculationSteps.Count);
@@ -593,7 +589,7 @@ TotalTax = Tax1[5] + Tax2[4.5] = 9.5
             var result = product + c;
             
             Assert.Equal(13m, result.Value); // (5 * 2) + 3 = 10 + 3 = 13
-            Assert.Equal("Product[10] + c[3] = 13", result.Caption);
+            Assert.Equal("Product[10] + c[3] = 13", result.FinalCalculationSteps);
             
             Assert.Equal("Product = a[5] × b[2] = 10", product.FinalCalculationSteps);
         }
@@ -609,7 +605,7 @@ TotalTax = Tax1[5] + Tax2[4.5] = 9.5
             var result = difference * z;
             
             Assert.Equal(4m, result.Value); // (6 - 4) * 2 = 2 * 2 = 4
-            Assert.Equal("Diff[2] × z[2] = 4", result.Caption);
+            Assert.Equal("Diff[2] × z[2] = 4", result.FinalCalculationSteps);
             
             Assert.Equal("Diff = x[6] - y[4] = 2", difference.FinalCalculationSteps);
         }
@@ -627,13 +623,10 @@ TotalTax = Tax1[5] + Tax2[4.5] = 9.5
             var mass = (volume * density).As("Mass");
             
             Assert.Equal(50m, area.Value);
-            Assert.Equal("Area", area.Caption);
             
             Assert.Equal(150m, volume.Value);
-            Assert.Equal("Volume", volume.Caption);
             
             Assert.Equal(375m, mass.Value);
-            Assert.Equal("Mass", mass.Caption);
             
             Assert.Equal("Area = length[10] × width[5] = 50", area.FinalCalculationSteps);
             Assert.Equal(
@@ -665,7 +658,7 @@ Mass = Volume[150] × density[2.5] = 375
             
             Assert.Equal(100m, interest.Value); // 1000 * 0.05 * 2 = 100
             Assert.Equal(1075m, total.Value); // 1000 + 100 - 25 = 1075
-            Assert.Equal("principal[1,000] + Interest[100] - fee[25] = 1,075", total.Caption);
+            Assert.Equal("principal[1,000] + Interest[100] - fee[25] = 1,075", total.FinalCalculationSteps);
             
             Assert.Equal("Interest = principal[1,000] × rate[0.05] × time[2] = 100", interest.FinalCalculationSteps);
         }
@@ -680,8 +673,7 @@ Mass = Volume[150] × density[2.5] = 375
             var wrappedResult = (a + b).As("Sum");
             
             Assert.Equal(originalResult.Value, wrappedResult.Value);
-            Assert.NotEqual(originalResult.Caption, wrappedResult.Caption);
-            Assert.Equal("Sum", wrappedResult.Caption);
+            Assert.NotEqual(originalResult.FinalCalculationSteps, wrappedResult.FinalCalculationSteps);
             
             Assert.Equal("Sum = a[7] + b[3] = 10", wrappedResult.FinalCalculationSteps);
         }
@@ -698,7 +690,7 @@ Mass = Volume[150] × density[2.5] = 375
             
             Assert.Equal(15m, average.Value); // 120 / 8 = 15
             Assert.Equal(20m, finalAmount.Value); // 15 + 5 = 20
-            Assert.Equal("Average[15] + bonus[5] = 20", finalAmount.Caption);
+            Assert.Equal("Average[15] + bonus[5] = 20", finalAmount.FinalCalculationSteps);
             
             Assert.Equal("Average = total[120] ÷ count[8] = 15", average.FinalCalculationSteps);
         }
@@ -850,7 +842,7 @@ TotalTax = Tax1[10] + Tax2[7.5] = 17.5
             var tax = basePrice * taxRate;
             
             // Simple variables should appear with their values in the calculation
-            Assert.Equal("BasePrice[100] × TaxRate[0.18] = 18", tax.Caption);
+            Assert.Equal("BasePrice[100] × TaxRate[0.18] = 18", tax.FinalCalculationSteps);
             Assert.Equal(18m, tax.Value);
         }
         
@@ -923,15 +915,15 @@ Mass = Volume[150] × Density[2.5] = 375
         }
         
         [Fact]
-        public void WrappedCalculatedValue_ShouldShowCalculationWithSimpleVariableValues_NoCaption()
+        public void WrappedCalculatedValue_ShouldShowCalculationWithSimpleVariableValues_NoFinalCalculationSteps()
         {
             var price = 100m.As("Price");
             var taxRate = 0.18m.As("TaxRate");
             
             var tax = (price * taxRate);
             
-            // Non-wrapped calculated values should show the calculation with result in Caption
-            Assert.Equal("Price[100] × TaxRate[0.18] = 18", tax.Caption);
+            // Non-wrapped calculated values should show the calculation with result in FinalCalculationSteps
+            Assert.Equal("Price[100] × TaxRate[0.18] = 18", tax.FinalCalculationSteps);
         }
     }
 }
