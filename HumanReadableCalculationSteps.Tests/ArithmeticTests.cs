@@ -221,7 +221,15 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a + b * c + d * e;
 
             Assert.Equal(31m, result.Value);
-            Assert.Equal("a[8] + b[2] × c[4] + d[3] × e[5] = 31", result.FinalCalculationSteps);
+            Assert.Equal(
+                """
+                  a[8]
+                + b[2]
+                × c[4]
+                + d[3]
+                × e[5]
+                = 31
+                """, result.FinalCalculationSteps);
         }
 
         [Fact]
@@ -237,7 +245,15 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a * b + c * d - e;
 
             Assert.Equal(23m, result.Value);
-            Assert.Equal("a[8] × b[2] + c[4] × d[3] - e[5] = 23", result.FinalCalculationSteps);
+            Assert.Equal(
+                """
+                  a[8]
+                × b[2]
+                + c[4]
+                × d[3]
+                - e[5]
+                = 23
+                """, result.FinalCalculationSteps);
         }
 
         [Fact]
@@ -253,7 +269,14 @@ namespace HumanReadableCalculationSteps.Tests
             var result = a / b - c + d * e;
 
             Assert.Equal(15m, result.Value);
-            Assert.Equal("a[8] ÷ b[2] - c[4] + d[3] × e[5] = 15", result.FinalCalculationSteps);
+            Assert.Equal("""
+                           a[8]
+                         ÷ b[2]
+                         - c[4]
+                         + d[3]
+                         × e[5]
+                         = 15
+                         """, result.FinalCalculationSteps);
         }
 
         [Fact]
@@ -296,7 +319,14 @@ namespace HumanReadableCalculationSteps.Tests
             var finalPrice = discountedPrice + tax * multiplier;
 
             Assert.Equal(2245m, finalPrice.Value);
-            Assert.Equal("საბაზო ფასი[100] - ფასდაკლება[15] + საბაზო ფასი[100] × დღგ[0.18] × ასოცი[120] = 2,245", finalPrice.FinalCalculationSteps);
+            Assert.Equal(
+                """
+                  საბაზო ფასი[100]
+                - ფასდაკლება[15]
+                + საბაზო ფასი[100]
+                × დღგ[0.18]
+                × ასოცი[120] = 2,245
+                """, finalPrice.FinalCalculationSteps);
         }
 
         [Theory]
@@ -457,7 +487,14 @@ namespace HumanReadableCalculationSteps.Tests
             var result = (a * b) + (c * d) - e;
 
             Assert.Equal(25m, result.Value);
-            Assert.Equal("a[2] × b[3] + c[4] × d[5] - e[1] = 25", result.FinalCalculationSteps);
+            Assert.Equal("""
+                           a[2]
+                         × b[3]
+                         + c[4]
+                         × d[5]
+                         - e[1]
+                         = 25
+                         """, result.FinalCalculationSteps);
         }
 
         [Fact]

@@ -1,33 +1,30 @@
-using HumanReadableCalculationSteps;
+using System;
 
-var x = 6m.As("x");
-var y = 4m.As("y");
-var z = 2m.As("z");
-
-var difference = (x - y).As("Diff");
-var result = difference * z;
-
-Console.WriteLine("=== Difference ===");
-Console.WriteLine($"difference.Value: {difference.Value}");
-Console.WriteLine($"difference.Precedence: {difference.Precedence}");
-Console.WriteLine($"difference._caption: {difference._caption}");
-Console.WriteLine($"difference.CalculationSteps count: {difference.CalculationSteps.Count}");
-foreach (var step in difference.CalculationSteps)
+// Simple test to understand multiline formatting
+class DebugTest 
 {
-    Console.WriteLine($"  - {step}");
+    static void Main() 
+    {
+        Console.WriteLine("Testing the multiline logic...");
+        
+        // Test if "a[8] + b[2] × c[4] + d[3] × e[5]" (4 operators) should be multiline
+        var expression = "a[8] + b[2] × c[4] + d[3] × e[5]";
+        var operatorCount = CountOperators(expression);
+        var shouldBeMultiline = operatorCount > 3 || expression.Length > 150;
+        
+        Console.WriteLine($"Expression: {expression}");
+        Console.WriteLine($"Operator count: {operatorCount}");
+        Console.WriteLine($"Expression length: {expression.Length}");
+        Console.WriteLine($"Should be multiline: {shouldBeMultiline}");
+    }
+    
+    static int CountOperators(string expression)
+    {
+        int count = 0;
+        count += expression.Split(" + ").Length - 1;
+        count += expression.Split(" - ").Length - 1;
+        count += expression.Split(" × ").Length - 1;
+        count += expression.Split(" ÷ ").Length - 1;
+        return count;
+    }
 }
-Console.WriteLine($"difference.FinalCalculationSteps:");
-Console.WriteLine($"\"{difference.FinalCalculationSteps}\"");
-
-Console.WriteLine();
-Console.WriteLine("=== Result ===");
-Console.WriteLine($"result.Value: {result.Value}");
-Console.WriteLine($"result.Precedence: {result.Precedence}");
-Console.WriteLine($"result._caption: {result._caption}");
-Console.WriteLine($"result.CalculationSteps count: {result.CalculationSteps.Count}");
-foreach (var step in result.CalculationSteps)
-{
-    Console.WriteLine($"  - {step}");
-}
-Console.WriteLine($"result.FinalCalculationSteps:");
-Console.WriteLine($"\"{result.FinalCalculationSteps}\"");
