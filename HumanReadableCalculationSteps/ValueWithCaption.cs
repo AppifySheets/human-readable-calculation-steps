@@ -1197,15 +1197,14 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
     }
 
     // Override Equals and GetHashCode since we're overriding == and !=
-    public override bool Equals(object? obj)
-    {
-        return obj is ValueWithCaption other && Value == other.Value && _caption == other._caption;
-    }
+    // Equality is value-based and must agree with operator ==, operator !=, and
+    // CompareTo — all of which compare on Value alone. _caption is display metadata
+    // (the human-readable derivation), not identity. Including it here previously
+    // caused a contract violation where (a == b) could be true while a.Equals(b)
+    // was false for two values with the same Value but different captions.
+    public override bool Equals(object? obj) => obj is ValueWithCaption other && Value == other.Value;
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Value, _caption);
-    }
+    public override int GetHashCode() => Value.GetHashCode();
 
     // IComparable implementation
     public int CompareTo(object? obj)
