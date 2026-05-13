@@ -424,7 +424,11 @@ DoubleValue = Intermediate[30] + Intermediate[30] = 60
 
             // Test calculation steps count to identify duplications
             var finalStepsText = totalPayment.FinalCalculationSteps;
-            var stepLines = finalStepsText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            // FinalCalculationSteps emits CRLF separators (matches the raw string literals
+            // below, which are CRLF-encoded in this source file). Split on the full "\r\n"
+            // sequence so we don't get phantom "\r"-only entries. Don't use Environment.NewLine
+            // here — the output is platform-stable CRLF, but Environment.NewLine is LF on non-Windows.
+            var stepLines = finalStepsText.Split(["\r\n"], StringSplitOptions.RemoveEmptyEntries);
             Assert.Equal(6, stepLines.Length); // Should have exactly 6 unique calculation steps
 
             var expectedSteps =
@@ -513,7 +517,11 @@ TotalCost = Mass[1,177.5] × CostPerKg[2.5] = 2,943.75
 
             // Test calculation steps count to identify duplications
             var finalStepsText = finalPrice.FinalCalculationSteps;
-            var stepLines = finalStepsText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            // FinalCalculationSteps emits CRLF separators (matches the raw string literals
+            // below, which are CRLF-encoded in this source file). Split on the full "\r\n"
+            // sequence so we don't get phantom "\r"-only entries. Don't use Environment.NewLine
+            // here — the output is platform-stable CRLF, but Environment.NewLine is LF on non-Windows.
+            var stepLines = finalStepsText.Split(["\r\n"], StringSplitOptions.RemoveEmptyEntries);
             Assert.Equal(9, stepLines.Length); // Should have exactly 9 unique calculation steps
 
             var expectedSteps =
@@ -563,7 +571,11 @@ FinalPrice = AfterRushFee[14,748.75] + Tax[1,290.52] = 16,039.27
 
             // Test calculation steps count to verify no duplications
             var finalStepsText = finalAmount.FinalCalculationSteps;
-            var stepLines = finalStepsText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            // FinalCalculationSteps emits CRLF separators (matches the raw string literals
+            // below, which are CRLF-encoded in this source file). Split on the full "\r\n"
+            // sequence so we don't get phantom "\r"-only entries. Don't use Environment.NewLine
+            // here — the output is platform-stable CRLF, but Environment.NewLine is LF on non-Windows.
+            var stepLines = finalStepsText.Split(["\r\n"], StringSplitOptions.RemoveEmptyEntries);
             Assert.Equal(5, stepLines.Length); // Should have exactly 5 unique calculation steps
 
             var expectedSteps =

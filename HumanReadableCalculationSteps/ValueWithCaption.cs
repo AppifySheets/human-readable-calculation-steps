@@ -297,9 +297,16 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
     public List<string> CalculationSteps { get; } = calculationSteps ?? [];
     
 
-    public string FinalCalculationSteps
+    // Public entry point: build the steps string using internal '\n' separators,
+    // then normalize line endings to CRLF for consumers that expect platform-stable
+    // output (the test suite asserts against CRLF-encoded raw string literals).
+    public string FinalCalculationSteps => NormalizeLineEndings(BuildFinalCalculationSteps());
+
+    static string NormalizeLineEndings(string value) =>
+        value.Replace("\r\n", "\n").Replace("\n", "\r\n");
+
+    string BuildFinalCalculationSteps()
     {
-        get
         {
             // If this has calculation steps, use the calculation steps logic
             if (CalculationSteps.Count > 0)
