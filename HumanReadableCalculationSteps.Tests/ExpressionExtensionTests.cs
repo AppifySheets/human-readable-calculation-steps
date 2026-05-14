@@ -65,15 +65,17 @@ namespace HumanReadableCalculationSteps.Tests
         {
             // Arrange
             var basePrice = 100m;
-            
+
             // Act
             var price = ValueWithCaption.From(() => basePrice);
-            
+
             // Assert
+            // FinalCalculationSteps must include the value alongside the
+            // caption — From(...) is symmetric with .As() in this respect.
             Assert.Equal(100m, price.Value);
-            Assert.Equal("basePrice", price.FinalCalculationSteps);
+            Assert.Equal("basePrice = 100", price.FinalCalculationSteps);
         }
-        
+
         [Fact]
         public void VariableReference_DifferentTypes_ShouldCreateValueWithVariableName()
         {
@@ -81,63 +83,67 @@ namespace HumanReadableCalculationSteps.Tests
             var intValue = 42;
             var doubleValue = 3.14;
             var floatValue = 1.5f;
-            
+
             // Act
             var intResult = ValueWithCaption.From(() => intValue);
             var doubleResult = ValueWithCaption.From(() => doubleValue);
             var floatResult = ValueWithCaption.From(() => floatValue);
-            
+
             // Assert
+            // Previously these worked by accident because the variable
+            // names ended with "Value" (a suffix-based hack that's now
+            // removed). Behavior is now driven by source kind: any
+            // MemberExpression renders as "caption = value".
             Assert.Equal(42m, intResult.Value);
-            Assert.Equal("intValue[42]", intResult.FinalCalculationSteps);
-            
+            Assert.Equal("intValue = 42", intResult.FinalCalculationSteps);
+
             Assert.Equal(3.14m, doubleResult.Value);
-            Assert.Equal("doubleValue[3.14]", doubleResult.FinalCalculationSteps);
-            
+            Assert.Equal("doubleValue = 3.14", doubleResult.FinalCalculationSteps);
+
             Assert.Equal(1.5m, floatResult.Value);
-            Assert.Equal("floatValue[1.5]", floatResult.FinalCalculationSteps);
+            Assert.Equal("floatValue = 1.5", floatResult.FinalCalculationSteps);
         }
-        
+
         [Fact]
         public void PropertyReference_WithoutDisplayName_ShouldUsePropertyName()
         {
             // Arrange
             var product = new TestProduct { Price = 99.99m };
-            
+
             // Act
             var price = ValueWithCaption.From(() => product.Price);
-            
+
             // Assert
             Assert.Equal(99.99m, price.Value);
-            Assert.Equal("Price", price.FinalCalculationSteps);
+            Assert.Equal("Price = 99.99", price.FinalCalculationSteps);
         }
-        
+
         [Fact]
         public void PropertyReference_WithDisplayName_ShouldUseDisplayName()
         {
             // Arrange
             var product = new TestProductWithDisplayName { Cost = 150.00m };
-            
+
             // Act
             var cost = ValueWithCaption.From(() => product.Cost);
-            
+
             // Assert
             Assert.Equal(150.00m, cost.Value);
-            Assert.Equal("Product Cost", cost.FinalCalculationSteps);
+            Assert.Equal("Product Cost = 150", cost.FinalCalculationSteps);
         }
-        
+
         [Fact]
         public void PropertyReference_WithEmptyDisplayName_ShouldUsePropertyName()
         {
             // Arrange
             var product = new TestProductWithEmptyDisplayName { Price = 75.50m };
-            
+
             // Act
             var price = ValueWithCaption.From(() => product.Price);
-            
+
             // Assert
             Assert.Equal(75.50m, price.Value);
-            Assert.Equal("Price", price.FinalCalculationSteps);
+            Assert.Equal("Price = 75.5", price.FinalCalculationSteps);
         }
         
         [Fact]

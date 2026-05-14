@@ -112,7 +112,7 @@ Property and field references work the same way:
 ```csharp
 var product = new Product { Price = 99.99m };
 var p = ValueWithCaption.From(() => product.Price);
-// p.FinalCalculationSteps -> "Price"
+// p.FinalCalculationSteps -> "Price = 99.99"
 ```
 
 ### 5. `[DisplayName]` for human-friendly property captions
@@ -128,7 +128,7 @@ class Product
 
 var product = new Product { Cost = 150m };
 var c = ValueWithCaption.From(() => product.Cost);
-// c.FinalCalculationSteps -> "Product Cost"
+// c.FinalCalculationSteps -> "Product Cost = 150"
 ```
 
 ### 6. LINQ-style `Sum` over collections

@@ -455,16 +455,15 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
             }
             else if (Precedence == 0)
             {
-                // Base values - show brackets for variable names ending with "Value", otherwise just caption
-                if (_caption.EndsWith("Value", StringComparison.OrdinalIgnoreCase))
-                {
-                    var cleanValue = VExtensions.CleanDecimalFormatting(Value.ToString(CultureInfo.InvariantCulture));
-                    return $"{_caption}[{cleanValue}]";
-                }
-                else
-                {
-                    return _caption;
-                }
+                // Base values with no calculation steps. After the From(...)
+                // change that seeds a step for variable/property references,
+                // this branch is reached only by sources whose caption
+                // already encodes the value: literal constants
+                // (From(() => 100m) -> caption "100"), the empty-Sum sentinel
+                // ("0"), and the single-item Sum compact form
+                // ("X[value]"). In all three cases the caption alone is
+                // the correct render — no value suffix needed.
+                return _caption;
             }
             else
             {
@@ -1227,85 +1226,92 @@ public class ValueWithCaption(decimal value, string caption, int precedence = 0,
         return Value.CompareTo(other.Value);
     }
 
-    // Static factory methods for expression-based creation
-    public static ValueWithCaption From(Expression<Func<decimal>> expression)
+    // Static factory methods for expression-based creation.
+    //
+    // For non-literal references (variables, properties, fields) we seed a
+    // "caption = value" calculation step so that .From(...) participates in
+    // the same display contract as .As(...): FinalCalculationSteps always
+    // shows BOTH the caption and the value the caption stands for.
+    //
+    // Literal constants are exempt because their caption already IS the
+    // value (e.g. From(() => 100m) has caption "100" — "100 = 100" would
+    // be redundant noise).
+    public static ValueWithCaption From(Expression<Func<decimal>> expression) =>
+        BuildFromExpression(expression, v => v);
+
+    public static ValueWithCaption From(Expression<Func<int>> expression) =>
+        BuildFromExpression(expression, v => v);
+
+    public static ValueWithCaption From(Expression<Func<double>> expression) =>
+        BuildFromExpression(expression, Convert.ToDecimal);
+
+    public static ValueWithCaption From(Expression<Func<float>> expression) =>
+        BuildFromExpression(expression, v => Convert.ToDecimal(v));
+
+    private static ValueWithCaption BuildFromExpression<T>(Expression<Func<T>> expression, Func<T, decimal> toDecimal)
     {
-        var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(value, caption, precedence: 0);
+        var value = toDecimal(expression.Compile()());
+        var (caption, isLiteral) = ExtractCaption(expression.Body);
+
+        if (isLiteral)
+            return new ValueWithCaption(value, caption, precedence: 0);
+
+        // Mirror VExtensions.As(decimal): the seeded step gives
+        // FinalCalculationSteps a value to render ("Price = 100") and is
+        // filtered out by CombineCalculationSteps when this value is used
+        // as an operand in arithmetic, so it never leaks into expression
+        // traces.
+        var step = $"{caption} = {VExtensions.CleanDecimalFormatting(value.ToString(CultureInfo.InvariantCulture))}";
+        return new ValueWithCaption(value, caption, precedence: 0, calculationSteps: [step]);
     }
 
-    public static ValueWithCaption From(Expression<Func<int>> expression)
-    {
-        var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(value, caption, precedence: 0);
-    }
-
-    public static ValueWithCaption From(Expression<Func<double>> expression)
-    {
-        var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(Convert.ToDecimal(value), caption, precedence: 0);
-    }
-
-    public static ValueWithCaption From(Expression<Func<float>> expression)
-    {
-        var (value, caption) = ExtractValueAndCaption(expression);
-        return new ValueWithCaption(Convert.ToDecimal(value), caption, precedence: 0);
-    }
-
-    private static (T value, string caption) ExtractValueAndCaption<T>(Expression<Func<T>> expression)
-    {
-        // Compile and execute the expression to get the value
-        var compiledExpression = expression.Compile();
-        var value = compiledExpression();
-
-        // Extract caption from the expression tree
-        var caption = ExtractCaption(expression.Body);
-
-        return (value, caption);
-    }
-
-    private static string ExtractCaption(Expression expression)
+    // Returns the caption to display AND whether the source expression was
+    // a literal constant. The isLiteral flag drives whether From(...) seeds
+    // a "caption = value" step (see BuildFromExpression).
+    private static (string Caption, bool IsLiteral) ExtractCaption(Expression expression)
     {
         switch (expression)
         {
             case ConstantExpression constantExpression:
-                // For literal values, use the value itself as caption
-                return VExtensions.CleanDecimalFormatting(constantExpression.Value?.ToString() ?? "null");
+                // For literal values, use the value itself as caption — no
+                // separate step needed since caption already encodes value.
+                return (VExtensions.CleanDecimalFormatting(constantExpression.Value?.ToString() ?? "null"), true);
 
             case MemberExpression memberExpression:
-                // For member access (variables, properties, fields)
+                // For member access (variables, properties, fields) the
+                // caption is a NAME and the value must be rendered alongside
+                // it — see BuildFromExpression for the step that achieves this.
                 var memberInfo = memberExpression.Member;
-                
-                // Check for DisplayName attribute on properties
+
+                // [DisplayName] on properties takes precedence over the raw name.
                 if (memberInfo is PropertyInfo propertyInfo)
                 {
                     var displayNameAttribute = propertyInfo.GetCustomAttribute<DisplayNameAttribute>();
                     if (displayNameAttribute != null && !string.IsNullOrWhiteSpace(displayNameAttribute.DisplayName))
-                    {
-                        return displayNameAttribute.DisplayName;
-                    }
+                        return (displayNameAttribute.DisplayName, false);
                 }
-                
-                // Check for DisplayName attribute on fields
+
+                // [DisplayName] on fields, same rule.
                 if (memberInfo is FieldInfo fieldInfo)
                 {
                     var displayNameAttribute = fieldInfo.GetCustomAttribute<DisplayNameAttribute>();
                     if (displayNameAttribute != null && !string.IsNullOrWhiteSpace(displayNameAttribute.DisplayName))
-                    {
-                        return displayNameAttribute.DisplayName;
-                    }
+                        return (displayNameAttribute.DisplayName, false);
                 }
-                
-                // Use the member name as fallback
-                return memberInfo.Name;
+
+                return (memberInfo.Name, false);
 
             case UnaryExpression unaryExpression when unaryExpression.NodeType == ExpressionType.Convert:
-                // Handle type conversions (like int to decimal)
+                // Type conversion wrappers (e.g. int→decimal in From(() => intVar))
+                // are transparent — delegate to the inner expression, preserving
+                // its literal/non-literal classification.
                 return ExtractCaption(unaryExpression.Operand);
 
             default:
-                // For other expression types, try to extract a meaningful name
-                return expression.ToString();
+                // For other expression shapes, fall back to the expression's
+                // own string form and treat as non-literal (we can't prove
+                // the caption encodes the value).
+                return (expression.ToString(), false);
         }
     }
 }
