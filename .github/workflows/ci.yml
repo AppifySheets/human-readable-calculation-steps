@@ -89,6 +89,13 @@ jobs:
           # If reporting itself fails (e.g., transient API issue), don't fail
           # the workflow — the tests already passed or failed independently.
           fail-on-error: false
+          # Default 'all' sends every test through the GitHub Checks API,
+          # which can hit payload-size limits and surface as
+          # 'HttpError: Request body length does not match content-length
+          # header'. Limiting to failed-only keeps the check small; the full
+          # results stay accessible via the uploaded TRX artifact.
+          list-tests: failed
+          list-suites: failed
 
       - name: Upload TRX as artifact
         # Always upload so the raw TRX is available for debugging even when
