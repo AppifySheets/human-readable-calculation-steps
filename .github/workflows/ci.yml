@@ -1,0 +1,142 @@
+# Continuous Integration workflow.
+#
+# Purpose:
+#   Run the test suite on every push and pull request, then surface the
+#   results as (a) a downloadable TRX artifact and (b) a GitHub "Checks"
+#   tab entry that shows pass/fail per test inline on the PR.
+#
+# This is separate from nuget-publish.yml, which only runs on tag/release
+# and is responsible for cutting and pushing packages. The split exists so
+# day-to-day PRs get fast feedback without needing tag pushes.
+name: CI
+
+on:
+  # Run on every push to any branch — gives feedback even before a PR opens.
+  push:
+    branches:
+      - '**'
+  # Also run on PRs targeting main, which is the integration branch.
+  pull_request:
+    branches:
+      - main
+
+# Cancel any in-progress run for the same branch when a new commit lands.
+# Saves CI minutes; the most recent commit is the only one we care about.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: ubuntu-latest
+
+    # Permissions explicitly granted: dorny/test-reporter needs `checks: write`
+    # to publish the test-results check, and `pull-requests: write` to surface
+    # the summary inline on PRs.
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Pinned to 8.0.x because the project targets net8.0 (see CLAUDE.md).
+          # Bumping this requires also bumping <TargetFramework> in csproj.
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build (Release)
+        # --no-restore: we just ran restore, no need to redo it.
+        # Release config matches what the publish workflow uses, so test
+        # results here are representative of what ships.
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        # `trx` logger produces the XML file consumed by the test-reporter step.
+        # `console;verbosity=normal` keeps the workflow log readable.
+        # `--results-directory` keeps TestResults out of bin/ so the artifact
+        # upload step has a stable path to point at.
+        # `continue-on-error` is intentionally NOT set: a test failure should
+        # fail the job. The reporter still runs in the next step (it uses
+        # `if: always()`) so partial results are visible even on failure.
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test_results.trx" \
+            --logger "console;verbosity=normal" \
+            --results-directory ./TestResults
+
+      - name: Publish test results to Checks tab
+        # Always run, even on test failure, so failing tests are visible
+        # inline on the PR / commit page rather than buried in logs.
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: .NET test results
+          path: TestResults/*.trx
+          # `dotnet-trx` is dorny/test-reporter's parser for TRX files
+          # produced by `dotnet test --logger trx`.
+          reporter: dotnet-trx
+          # If reporting itself fails (e.g., transient API issue), don't fail
+          # the workflow — the tests already passed or failed independently.
+          fail-on-error: false
+
+      - name: Upload TRX as artifact
+        # Always upload so the raw TRX is available for debugging even when
+        # the test-reporter step fails or when running on a forked PR (where
+        # the reporter's API access may be limited).
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: TestResults/*.trx
+          # 14 days is enough for post-mortem on most regressions without
+          # bloating the repo's artifact storage.
+          retention-days: 14
+
+      - name: Generate calculation showcase
+        # Runs the Examples console project, which exercises the library on
+        # a curated set of representative scenarios and writes a Markdown
+        # report. Reviewers reading the CI run can see the ACTUAL output
+        # FinalCalculationSteps produces — not just pass/fail counts —
+        # without needing to clone and run anything locally.
+        #
+        # Skipped if tests failed: if the library is broken, the showcase
+        # might emit misleading output or crash, and the test report already
+        # surfaces the real signal.
+        if: success()
+        run: dotnet run --project HumanReadableCalculationSteps.Examples --configuration Release --no-build -- examples.md
+
+      - name: Render showcase into job summary
+        # GITHUB_STEP_SUMMARY is a markdown file whose contents are rendered
+        # directly on the workflow run page. Inlining the showcase here means
+        # reviewers see the actual formatted calculations without having to
+        # download and open the artifact.
+        if: success()
+        run: |
+          {
+            echo "# Calculation showcase"
+            echo
+            echo "Real \`FinalCalculationSteps\` output from this build:"
+            echo
+            cat examples.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload showcase as artifact
+        # Also kept as a downloadable artifact for offline review or for
+        # diffing across builds (e.g., to spot accidental formatter changes).
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculation-showcase-${{ github.run_id }}
+          path: examples.md
+          retention-days: 14
