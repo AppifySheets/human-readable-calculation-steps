@@ -82,7 +82,25 @@ jobs:
 
     - name: Test
       if: env.SKIP_RELEASE != 'true'
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      # TRX logger added so the release run also produces a downloadable test
+      # report (mirrors the ci.yml workflow). A failing test here aborts the
+      # publish — we should never push a package that didn't pass tests.
+      run: |
+        dotnet test \
+          --configuration Release \
+          --no-build \
+          --verbosity normal \
+          --logger "trx;LogFileName=test_results.trx" \
+          --results-directory ./TestResults
+
+    - name: Upload test results
+      # Run even on failure so we can diagnose which test broke the release.
+      if: env.SKIP_RELEASE != 'true' && always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-test-results-${{ github.run_id }}
+        path: TestResults/*.trx
+        retention-days: 30  # longer than ci.yml — release-time results are higher-stakes.
 
     - name: Pack
       if: env.SKIP_RELEASE != 'true'
