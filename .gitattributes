@@ -1,0 +1,28 @@
+# Pin C# source files to CRLF on every checkout.
+#
+# Why: the test suite relies on raw string literals ("""...""") whose
+# embedded line endings are taken verbatim from the source file. The library
+# emits CRLF in FinalCalculationSteps, so the test literals must also be CRLF
+# for Assert.Equal to match. Without this file, Linux CI runners would
+# normalize .cs to LF on checkout, breaking the tests against a Windows-
+# committed CRLF working tree.
+*.cs                text eol=crlf
+*.csproj            text eol=crlf
+*.sln               text eol=crlf
+*.props             text eol=crlf
+*.targets           text eol=crlf
+
+# Shell scripts and YAML stay LF — they run on Linux runners, and CRLF
+# breaks `#!/bin/bash` and YAML multi-line scalars.
+*.sh                text eol=lf
+*.yml               text eol=lf
+*.yaml              text eol=lf
+
+# Markdown / docs: let git auto-detect. CRLF or LF, doesn't affect rendering.
+*.md                text
+*.txt               text
+
+# Binary files — never touch line endings.
+*.png               binary
+*.nupkg             binary
+*.snupkg            binary

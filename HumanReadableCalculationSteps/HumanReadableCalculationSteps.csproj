@@ -12,8 +12,8 @@
     <Authors>Petre Chitashvili</Authors>
     <Company>AppifySheets</Company>
     <PackageTags>calculation;formatting;human-readable;steps</PackageTags>
-    <PackageProjectUrl>https://github.com/AppifySheets/Human-Readable-Calculation-Steps-Dotnet</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/AppifySheets/Human-Readable-Calculation-Steps-Dotnet</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/AppifySheets/narrated-math-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AppifySheets/narrated-math-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
