@@ -1,6 +1,6 @@
-# Narrated Math
+# Human Readable Calculation Steps
 
-A .NET library that turns arithmetic into a self-narrating audit trail. Every value carries a caption, every operator records its derivation, and the final result can be printed as the human-readable steps that produced it.
+A .NET library for arithmetic that explains itself. Every value carries a caption, every operator records its derivation, and the final result can be printed as the human-readable steps that produced it.
 
 Useful for invoices, payroll, tax breakdowns, financial reports, or any UI where a number on screen needs to explain where it came from.
 
